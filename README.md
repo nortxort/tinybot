@@ -11,7 +11,7 @@ Examples shown here, assumes you are using windows.
 tinybot was developed using [python 2.7](https://www.python.org/downloads/windows/ "python for windows") so this is the recomended python interpreter. If you do not already have that installed, install if from the link.
 
 ### Requirements
-tinybot reqires pinylib and its [requirements](https://github.com/nortxort/pinylib/wiki/Requirements "pinylib requirements"). Next step is to install a module that is not part of the standard python library, that module being:
+tinybot requires pinylib and its [requirements](https://github.com/nortxort/pinylib/wiki/Requirements "pinylib requirements"). Next step is to install a module that is not part of the standard python library, that module being:
 
 * [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/download/)
 
