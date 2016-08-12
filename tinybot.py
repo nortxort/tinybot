@@ -1877,16 +1877,14 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             if CONFIG['auto_message_enabled']:
                 self.send_bot_msg(self.random_msg(), use_chat_msg=True)
             # It seems like there is some trouble using PING, see pinylib issue #30
-            # if and when this gets resolved i might move it to pinylib.
-            # for now ive disabled it.
             # self.connection.send_ping_request()
         self.start_auto_msg_timer()
 
     def start_auto_msg_timer(self):
         """
         In rooms with less activity, it can be useful to have the client send auto messages to keep the client alive.
-        This method can be disabled by setting BOT_OPTIONS['auto_message_sender'] to False.
-        The interval for when a message should be sent, is set in BOT_OPTIONS['auto_message_interval']
+        This method can be disabled by setting CONFIG['auto_message_enabled'] to False.
+        The interval for when a message should be sent, is set with CONFIG['auto_message_interval']
         """
         threading.Timer(CONFIG['auto_message_interval'], self.auto_msg_handler).start()
 
