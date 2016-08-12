@@ -15,7 +15,7 @@ tinybot reqires pinylib and its [requirements](https://github.com/nortxort/pinyl
 
 * [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/download/)
 
-This can be installed using pip `pip install BeautifulSoup4`
+This can be installed from a command prompt with pip. `pip install BeautifulSoup4`
 
 Next download [pinylib](https://github.com/nortxort/pinylib/archive/master.zip "the pinylib module") and [tinybot](https://github.com/nortxort/tinybot/archive/master.zip) and unpack them. Now copy the **contents of the folders in tinybot to the coresponding folders inside pinylib**. Meaning, the content of the folder named *e.g* apis in tinybot should be placed in pinylibs apis folder and so on. If a folder inside tinybot does not exist inside pinylib, then the whole folder and it's content is copied in to pinylib. Place tinybot.py in the root folder of pinylib.
 
