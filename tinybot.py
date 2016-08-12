@@ -17,7 +17,7 @@ CONFIG = {
     'bot_msg_to_console': False,
     'auto_message_enabled': True,
     'public_cmds': True,
-    'debug_to_file': True,
+    'debug_to_file': False,
     'auto_message_interval': 300,
     'nick_bans': 'nick_bans.txt',
     'account_bans': 'account_bans.txt',
