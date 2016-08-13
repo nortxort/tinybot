@@ -566,9 +566,8 @@ class TinychatBot(pinylib.TinychatRTMPClient):
     # == Owner And Bot Controller Commands Methods. ==
     def do_media_info(self):
         """ Shows basic media info. """
-        # This method was used while debugging the media player, and doesnt serve a purpose.
         if self._is_client_mod:
-            self.send_owner_run_msg('*media_manager.track_list_index:* ' + str(self.media_manager.track_list_index))
+            self.send_owner_run_msg('*Track List Index:* ' + str(self.media_manager.track_list_index))
             self.send_owner_run_msg('*Playlist Length:* ' + str(len(self.media_manager.track_list)))
             self.send_owner_run_msg('*Current Time Point:* ' +
                                     self.format_time(self.media_manager.elapsed_track_time()))
