@@ -26,7 +26,7 @@ CONFIG = {
 }
 
 log = logging.getLogger(__name__)
-__version__ = '4.0.0'
+__version__ = '4.0.1'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -341,8 +341,8 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 elif cmd == CONFIG['prefix'] + 'skip':
                     self.do_skip()
 
-                # elif cmd == CONFIG['prefix'] + 'del':
-                #     self.do_delete_playlist_item(cmd_arg)
+                elif cmd == CONFIG['prefix'] + 'del':
+                    self.do_delete_playlist_item(cmd_arg)
 
                 elif cmd == CONFIG['prefix'] + 'rpl':
                     self.do_media_replay()
@@ -709,7 +709,49 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             track = self.media_manager.get_next_track()
             self.send_media_broadcast_start(track.type, track.id)
             self.media_event_timer(track.time)
+            
+    def do_delete_playlist_item(self, to_delete):
+        """
+        Delete item(s) from the playlist by index.
+        :param to_delete: str index(es) to delete.
+        """
+        if len(self.media_manager.track_list) is 0:
+            self.send_bot_msg('The track list is empty.')
+        elif len(to_delete) is 0:
+            self.send_bot_msg('No indexes to delete provided.')
+        else:
+            indexes = None
+            by_range = False
 
+            try:
+                if ':' in to_delete:
+                    range_indexes = map(int, to_delete.split(':'))
+                    temp_indexes = range(range_indexes[0], range_indexes[1] + 1)
+                    if len(temp_indexes) > 1:
+                        by_range = True
+                else:
+                    temp_indexes = map(int, to_delete.split(','))
+            except ValueError:
+                # add logging here?
+                self.send_undercover_msg(self.user.nick, 'Wrong format.(ValueError)')
+            else:
+                indexes = []
+                for i in temp_indexes:
+                    if i < len(self.media_manager.track_list) and i not in indexes:
+                        indexes.append(i)
+
+            if indexes is not None and len(indexes) > 0:
+                result = self.media_manager.delete_by_index(indexes, by_range)
+                if result is not None:
+                    if by_range:
+                        self.send_bot_msg('*Deleted from index:* %s *to index:* %s' % (result['from'], result['to']))
+                    elif result['deleted_indexes_len'] is 1:
+                        self.send_bot_msg('*Deleted* %s' % result['track_title'])
+                    else:
+                        self.send_bot_msg('*Deleted tracks at index:* %s' % ', '.join(result['deleted_indexes']))
+                else:
+                    self.send_bot_msg('Nothing was deleted.')
+                    
     def do_media_replay(self):
         """ Replays the last played media."""
         if self.media_manager.track() is not None:
