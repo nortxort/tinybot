@@ -226,21 +226,30 @@ class MediaManager:
         elif self.track_list_index < len(self.track_list):
             return self.track_list_index, self.track_list[self.track_list_index]
 
-    def delete_by_index(self, indexes):
+    def delete_by_index(self, indexes, by_range):
         """
         Delete track by index.
 
         Indexes should be a list of int(indexes) we want to delete from the track list.
-        NOTE: Not implemented yet. might need rewrite.
         :param indexes: list int indexes.
-        :return: list of the indexes that was deleted.
+        :param by_range: bool, True if deleting a range.
+        :return: dict, or None if nothing was deleted.
         """
+        track_list_copy = list(self.track_list)
         deleted_indexes = []
-        if indexes is not None and len(indexes) is not 0:
-            if len(self.track_list) is not 0:
-                for i in sorted(indexes, reverse=True):
-                    if self.track_list_index <= i < len(self.track_list):
-                        del self.track_list[i]
-                        deleted_indexes.append(str(i))
-                deleted_indexes.reverse()
-                return deleted_indexes
+        for i in sorted(indexes, reverse=True):
+            if self.track_list_index <= i < len(self.track_list):
+                del self.track_list[i]
+                deleted_indexes.append(str(i))
+        deleted_indexes.reverse()
+        if len(deleted_indexes) > 0:
+            _result = dict()
+            if by_range:
+                _result['from'] = deleted_indexes[0]
+                _result['to'] = deleted_indexes[-1]
+            elif len(deleted_indexes) is 1:  # == 1
+                _result['track_title'] = track_list_copy[int(deleted_indexes[0])].title
+            _result['deleted_indexes'] = deleted_indexes
+            _result['deleted_indexes_len'] = len(deleted_indexes)
+            return _result
+        return None
