@@ -247,7 +247,7 @@ class MediaManager:
             if by_range:
                 _result['from'] = deleted_indexes[0]
                 _result['to'] = deleted_indexes[-1]
-            elif len(deleted_indexes) is 1:  # == 1
+            elif len(deleted_indexes) is 1:
                 _result['track_title'] = track_list_copy[int(deleted_indexes[0])].title
             _result['deleted_indexes'] = deleted_indexes
             _result['deleted_indexes_len'] = len(deleted_indexes)
