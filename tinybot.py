@@ -15,7 +15,7 @@ CONFIG = {
     'key': '6348yss',
     'super_key': 'sd78fwetsd4r',
     'bot_msg_to_console': False,
-    'auto_message_enabled': True,
+    'auto_message_enabled': False,
     'public_cmds': True,
     'debug_to_file': False,
     'auto_message_interval': 300,
@@ -1917,8 +1917,6 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         if self.is_connected:
             if CONFIG['auto_message_enabled']:
                 self.send_bot_msg(self.random_msg(), use_chat_msg=True)
-            # It seems like there is some trouble using PING, see pinylib issue #30
-            # self.connection.send_ping_request()
         self.start_auto_msg_timer()
 
     def start_auto_msg_timer(self):
