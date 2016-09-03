@@ -26,7 +26,7 @@ CONFIG = {
 }
 
 log = logging.getLogger(__name__)
-__version__ = '4.0.1'
+__version__ = '4.0.2'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -756,6 +756,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         """ Replays the last played media."""
         if self.media_manager.track() is not None:
             self.cancel_media_event_timer()
+            self.media_manager.we_play(self.media_manager.track())
             self.send_media_broadcast_start(self.media_manager.track().type,
                                             self.media_manager.track().id)
             self.media_event_timer(self.media_manager.track().time)
@@ -792,20 +793,20 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         Seek on a media playing.
         :param time_point str the time point to skip to.
         """
-        if self.media_timer_thread is not None and self.media_timer_thread.is_alive():
-            if ('h' in time_point) or ('m' in time_point) or ('s' in time_point):
-                mls = string_utili.convert_to_millisecond(time_point)
-                if mls is 0:
-                    self.console_write(pinylib.COLOR['bright_red'], 'invalid seek time.')
-                else:
-                    track = self.media_manager.track()
-                    if track is not None:
-                        if 0 < mls < track.time:
+        if ('h' in time_point) or ('m' in time_point) or ('s' in time_point):
+            mls = string_utili.convert_to_millisecond(time_point)
+            if mls is 0:
+                self.console_write(pinylib.COLOR['bright_red'], 'invalid seek time.')
+            else:
+                track = self.media_manager.track()
+                if track is not None:
+                    if 0 < mls < track.time:
+                        if self.media_timer_thread is not None and self.media_timer_thread.is_alive():
                             self.cancel_media_event_timer()
-                            new_media_time = self.media_manager.mb_skip(mls)
-                            if not self.media_manager.is_paused:
-                                self.media_event_timer(new_media_time)
-                            self.send_media_broadcast_skip(track.type, mls)
+                        new_media_time = self.media_manager.mb_skip(mls)
+                        if not self.media_manager.is_paused:
+                            self.media_event_timer(new_media_time)
+                        self.send_media_broadcast_skip(track.type, mls)
 
     def do_clear_playlist(self):
         """ Clear the playlist. """
@@ -1050,8 +1051,12 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 if user is None:
                     self.send_bot_msg('No user named: ' + user_name)
                 else:
+                    if user.account and user.tinychat_id is None:
+                        user_info = pinylib.tinychat.tinychat_user_info(user.account)
+                        if user_info is not None:
+                            user.tinychat_id = user_info['tinychat_id']
+                            user.last_login = user_info['last_active']
                     self.send_owner_run_msg('*ID:* ' + str(user.id))
-                    self.send_owner_run_msg('*Is Mod:* ' + str(user.is_mod))
                     self.send_owner_run_msg('*Bot Control:* ' + str(user.has_power))
                     self.send_owner_run_msg('*Owner:* ' + str(user.is_owner))
                     if user.tinychat_id is not None:
