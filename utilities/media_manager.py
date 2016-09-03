@@ -43,10 +43,9 @@ class MediaManager:
         else:
             return len(self.track_list) - 1
 
-    def _play(self, track_obj):
+    def we_play(self, track_obj):
         """
         This will be called when ever we play from playlist.
-        NOTE: This is for internal use only, and should NOT be called outside this class.
         :param track_obj: object the track object of the next track.
         """
         self.is_mod_playing = False
@@ -73,8 +72,7 @@ class MediaManager:
     def mb_pause(self):
         """ This method must be called when ever someone pauses a track. """
         self.is_paused = True
-        ts_now = int(time.time() * 1000)
-        self.current_media.pause_time = ts_now - self.current_media.track_start_time
+        self.current_media.pause_time = int(time.time() * 1000) - self.current_media.track_start_time
 
     def mb_close(self):
         """ This method must be called when a track gets closed. """
@@ -103,7 +101,8 @@ class MediaManager:
         :return: int milliseconds left of the track
         """
         if self.is_paused:
-            self.current_media.pause_time = int(time.time() * 1000) - self.current_media.track_start_time
+            self.mb_pause()
+            # self.current_media.pause_time = int(time.time() * 1000) - self.current_media.track_start_time
         else:
             self.current_media.track_start_time = int(time.time() * 1000) - time_point
         track_time_left = self.current_media.time - time_point
@@ -174,7 +173,7 @@ class MediaManager:
 
     def is_last_track(self):
         """
-
+        Checks if we have reached the end of the track list.
         :return: True if last track, False if not last track, or None if no track list exists. """
         if len(self.track_list) > 0:
             if self.track_list_index >= len(self.track_list):  # - 1
