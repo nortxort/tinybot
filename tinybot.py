@@ -26,7 +26,7 @@ CONFIG = {
 }
 
 log = logging.getLogger(__name__)
-__version__ = '4.0.2'
+__version__ = '4.0.3'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -1060,7 +1060,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                     self.send_owner_run_msg('*Bot Control:* ' + str(user.has_power))
                     self.send_owner_run_msg('*Owner:* ' + str(user.is_owner))
                     if user.tinychat_id is not None:
-                        self.send_owner_run_msg('*Account:* ' + str(user.user_account))
+                        self.send_owner_run_msg('*Account:* ' + str(user.account))
                         self.send_owner_run_msg('*Tinychat ID:* ' + str(user.tinychat_id))
                         self.send_owner_run_msg('*Last login:* ' + str(user.last_login))
                     self.send_owner_run_msg('*Last message:* ' + str(user.last_msg))
