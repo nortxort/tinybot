@@ -26,7 +26,7 @@ CONFIG = {
 }
 
 log = logging.getLogger(__name__)
-__version__ = '4.0.3'
+__version__ = '4.0.4'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -155,22 +155,21 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         :param video_id: str the youtube ID or soundcloud track ID.
         :param usr_nick: str the user name of the user playing media. NOTE: replace with self.user_obj.nick
         """
-        if self.user.is_mod:
-            self.cancel_media_event_timer()
+        self.cancel_media_event_timer()
 
-            if media_type == 'youTube':
-                _youtube = youtube.youtube_time(video_id, check=False)
-                if _youtube is not None:
-                    self.media_manager.mb_start(self.user.nick, _youtube)
+        if media_type == 'youTube':
+            _youtube = youtube.youtube_time(video_id, check=False)
+            if _youtube is not None:
+                self.media_manager.mb_start(self.user.nick, _youtube)
 
-            elif media_type == 'soundCloud':
-                _soundcloud = soundcloud.soundcloud_track_info(video_id)
-                if _soundcloud is not None:
-                    self.media_manager.mb_start(self.user.nick, _soundcloud)
+        elif media_type == 'soundCloud':
+            _soundcloud = soundcloud.soundcloud_track_info(video_id)
+            if _soundcloud is not None:
+                self.media_manager.mb_start(self.user.nick, _soundcloud)
 
-            self.media_event_timer(self.media_manager.track().time)
-            self.console_write(pinylib.COLOR['bright_magenta'], '%s is playing %s %s' %
-                               (usr_nick, media_type, video_id))
+        self.media_event_timer(self.media_manager.track().time)
+        self.console_write(pinylib.COLOR['bright_magenta'], '%s is playing %s %s' %
+                           (usr_nick, media_type, video_id))
 
     def on_media_broadcast_close(self, media_type, usr_nick):
         """
@@ -178,10 +177,9 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         :param media_type: str the type of media. youTube or soundCloud.
         :param usr_nick: str the user name of the user closing the media.
         """
-        if self.user.is_mod:
-            self.cancel_media_event_timer()
-            self.media_manager.mb_close()
-            self.console_write(pinylib.COLOR['bright_magenta'], '%s closed the %s' % (usr_nick, media_type))
+        self.cancel_media_event_timer()
+        self.media_manager.mb_close()
+        self.console_write(pinylib.COLOR['bright_magenta'], '%s closed the %s' % (usr_nick, media_type))
 
     def on_media_broadcast_paused(self, media_type, usr_nick):
         """
@@ -189,10 +187,9 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         :param media_type: str the type of media being paused. youTube or soundCloud.
         :param usr_nick: str the user name of the user pausing the media.
         """
-        if self.user.is_mod:
-            self.cancel_media_event_timer()
-            self.media_manager.mb_pause()
-            self.console_write(pinylib.COLOR['bright_magenta'], '%s paused the %s' % (usr_nick, media_type))
+        self.cancel_media_event_timer()
+        self.media_manager.mb_pause()
+        self.console_write(pinylib.COLOR['bright_magenta'], '%s paused the %s' % (usr_nick, media_type))
 
     def on_media_broadcast_play(self, media_type, time_point, usr_nick):
         """
@@ -201,13 +198,12 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         :param time_point: int the time point in the tune in milliseconds.
         :param usr_nick: str the user resuming the tune.
         """
-        if self.user.is_mod:
-            self.cancel_media_event_timer()
-            new_media_time = self.media_manager.mb_play(time_point)
-            self.media_event_timer(new_media_time)
+        self.cancel_media_event_timer()
+        new_media_time = self.media_manager.mb_play(time_point)
+        self.media_event_timer(new_media_time)
 
-            self.console_write(pinylib.COLOR['bright_magenta'], '%s resumed the %s at: %s' %
-                               (usr_nick, media_type, self.format_time(time_point)))
+        self.console_write(pinylib.COLOR['bright_magenta'], '%s resumed the %s at: %s' %
+                           (usr_nick, media_type, self.format_time(time_point)))
 
     def on_media_broadcast_skip(self, media_type, time_point, usr_nick):
         """
@@ -216,14 +212,13 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         :param time_point: int the time point in the tune in milliseconds.
         :param usr_nick: str the user time searching the tune.
         """
-        if self.user.is_mod:
-            self.cancel_media_event_timer()
-            new_media_time = self.media_manager.mb_skip(time_point)
-            if not self.media_manager.is_paused:
-                self.media_event_timer(new_media_time)
+        self.cancel_media_event_timer()
+        new_media_time = self.media_manager.mb_skip(time_point)
+        if not self.media_manager.is_paused:
+            self.media_event_timer(new_media_time)
 
-            self.console_write(pinylib.COLOR['bright_magenta'], '%s time searched the %s at: %s' %
-                               (usr_nick, media_type, self.format_time(time_point)))
+        self.console_write(pinylib.COLOR['bright_magenta'], '%s time searched the %s at: %s' %
+                           (usr_nick, media_type, self.format_time(time_point)))
 
     # Media Message Method.
     def send_media_broadcast_start(self, media_type, video_id, time_point=0, private_nick=None):
