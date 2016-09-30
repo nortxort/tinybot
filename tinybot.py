@@ -1123,7 +1123,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         if self.media_timer_thread is not None and self.media_timer_thread.is_alive():
             track = self.media_manager.track()
             ago = self.format_time(int(pinylib.time.time() - track.rq_time) * 1000)
-            self.send_undercover_msg(self.user.nick, '*' + track.nick + '* requested this track: ' + ago + ' ago.')
+            self.send_undercover_msg(self.user.nick, '*' + track.owner + '* requested this track: ' + ago + ' ago.')
         else:
             self.send_undercover_msg(self.user.nick, 'No track playing.')
 
