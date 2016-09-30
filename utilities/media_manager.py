@@ -10,7 +10,7 @@ import time
 class Track:
     """ A class representing each track. """
     def __init__(self, nick=None, **kwargs):
-        self.nick = nick
+        self.owner = nick
         self.rq_time = time.time()
         self.id = kwargs.get('video_id', None)
         self.type = kwargs.get('type', None)
