@@ -140,7 +140,7 @@ class MediaManager:
         if len(self.track_list) > 0:
             if self.track_list_index <= len(self.track_list):
                 next_track = self.track_list[self.track_list_index]
-                self._play(next_track)
+                self.we_play(next_track)
                 self.track_list_index += 1  # prepare the next track.
                 return next_track
             return None
