@@ -2,6 +2,10 @@
 # Use a prefix, if you plan on adding your own.
 # Settings info https://github.com/nortxort/pinylib/wiki/Settings
 
+# Tinychat account.
+ACCOUNT = ''
+# Password for account
+PASSWORD = ''
 # The swf version that tinychat is currently using.
 SWF_VERSION = '0675'
 # Log chat messages and events.
@@ -29,10 +33,6 @@ CONFIG_PATH = 'rooms/'
 
 # This section holds the bot's configuration.
 
-# Tinychat account.
-B_ACCOUNT = ''
-# Password for account.
-B_PASSWORD = ''
 # The prefix used for bot commands.
 B_PREFIX = '!'
 # Bot controller key.
