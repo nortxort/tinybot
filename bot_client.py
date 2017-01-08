@@ -9,17 +9,17 @@ log = logging.getLogger(__name__)
 
 def main():
     room_name = raw_input('Enter room name: ').strip()
-    if config.B_ACCOUNT and config.B_PASSWORD:
-        bot = tinybot.TinychatBot(roomname=room_name, account=config.B_ACCOUNT, password=config.B_PASSWORD)
+    if config.ACCOUNT and config.PASSWORD:
+        bot = tinybot.TinychatBot(roomname=room_name, account=config.ACCOUNT, password=config.PASSWORD)
     else:
         bot = tinybot.TinychatBot(roomname=room_name)
     bot.nickname = raw_input('Enter nickname: (optional) ').strip()
-    do_login = raw_input('Login? [enter=No] ')
 
+    do_login = raw_input('Login? [enter=No] ')
     if do_login:
-        if not config.B_ACCOUNT:
+        if not bot.account:
             bot.account = raw_input('Account: ').strip()
-        if not config.B_PASSWORD:
+        if not bot.password:
             bot.password = raw_input('Password: ')
 
         is_logged_in = bot.login()
@@ -122,10 +122,9 @@ def main():
             bot.send_chat_msg(chat_msg)
 
 if __name__ == '__main__':
-    if tinybot.config.DEBUG_TO_FILE:
+    if config.DEBUG_TO_FILE:
         formater = '%(asctime)s : %(levelname)s : %(filename)s : %(lineno)d : %(funcName)s() : %(name)s : %(message)s'
-        logging.basicConfig(filename=tinybot.config.B_DEBUG_FILE_NAME,
-                            level=logging.DEBUG, format=formater)
+        logging.basicConfig(filename=config.B_DEBUG_FILE_NAME, level=logging.DEBUG, format=formater)
         log.info('Starting tinybot version: %s using pinylib version: %s' %
                  (tinybot.__version__, tinybot.pinylib.__version__))
     else:
