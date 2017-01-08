@@ -1,29 +1,27 @@
 ## Tinybot
 
-A tinychat room bot using the pinylib module.
+An extension module for the pinylib module.
 
-Tinybot is an **example** as to how a tinychat bot *could* look like using the [pinylib](https://github.com/nortxort/pinylib) module as a base. It could be used as a template or it could be expanded with more features. It's all up to you how you would like to use it.
+tinybot is an **example** as to how a tinychat bot *could* look like using the [pinylib](https://github.com/nortxort/pinylib) module as a base. It could be used as a template or it could be expanded with more features. It's all up to you how you would like to use it.
 
 ## Setting up
 
-Examples shown here, assumes you are using windows, know how to run python from a command prompt and know how to install modules using pip.
+Examples shown here, assumes you are using windows.
 
 tinybot was developed using [python 2.7](https://www.python.org/downloads/windows/ "python for windows") so this is the recomended python interpreter. If you do not already have that installed, install if from the link.
 
 ### Requirements
-tinybot requires pinylib and its [requirements](https://github.com/nortxort/pinylib/wiki/Requirements "pinylib requirements"). Next step is to install a module that is not part of the standard python library, that module being:
+tinybot reqires pinylib and its [requirements](https://github.com/nortxort/pinylib/wiki/Requirements "pinylib requirements"). Next step is to install a module that is not part of the standard python library, that module being:
 
 * [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/download/)
 
-This can be installed from a command prompt with pip. 
+This can be installed using pip `pip install BeautifulSoup4`
 
-`pip install BeautifulSoup4`
-
-Next download [pinylib](https://github.com/nortxort/pinylib/archive/master.zip "the pinylib module") and [tinybot](https://github.com/nortxort/tinybot/archive/master.zip) and unpack them. Now copy the **contents of the folders in tinybot to the coresponding folders inside pinylib**. Meaning, the content of the folder named *e.g* apis in tinybot should be placed in pinylibs apis folder and so on. If a folder inside tinybot does not exist inside pinylib, then the whole folder and it's content is copied in to pinylib. Place tinybot.py in the root folder of pinylib.
+Next download [pinylib](https://github.com/nortxort/pinylib/archive/master.zip "pinylib module") and [tinybot](https://github.com/nortxort/tinybot/archive/master.zip "pinylib extension module") and unpack them. Now copy the **contents of the folders in tinybot to the coresponding folders inside pinylib**. Meaning, the content of the folder named *e.g* util in tinybot should be placed in pinylibs util folder and so on. If a folder inside tinybot does not exist inside pinylib, then the whole folder and it's content is copied in to pinylib. Place the files in the root folder of tinybot in to the root folder of pinylib.
 
 ## Run tinybot
 
-Run tinybot by typing `python path\to\tinybot.py` in a command prompt.
+Run tinybot by typing `python path\to\bot_client.py` in a command prompt.
 
 
 ## Author
@@ -34,7 +32,7 @@ Run tinybot by typing `python path\to\tinybot.py` in a command prompt.
 
 The MIT License (MIT)
 
-Copyright (c) 2016 nortxort
+Copyright (c) 2017 nortxort
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software
 and associated documentation files (the "Software"), to deal in the Software without restriction,
