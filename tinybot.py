@@ -293,6 +293,9 @@ class TinychatBot(pinylib.TinychatRTMPClient):
 
                 elif cmd == prefix + 'newusers':
                     self.do_newusers()
+                    
+                elif cmd == prefix + 'greet':
+                    self.do_greet()
 
                 elif cmd == prefix + 'pub':
                     self.do_public_cmds()
@@ -611,6 +614,11 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         """ Toggles if newusers are allowed to join the room or not. """
         config.B_ALLOW_NEWUSERS = not config.B_ALLOW_NEWUSERS
         self.send_bot_msg('*Allow Newusers:* %s' % config.B_ALLOW_NEWUSERS)
+        
+    def do_greet(self):
+        """ Toggles if users should be greeted on entry. """
+        config.B_GREET = not config.B_GREET
+        self.send_bot_msg('*Greet Users:* %s' % config.B_GREET)
 
     def do_public_cmds(self):
         """ Toggles if public commands are public or not. """
