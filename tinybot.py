@@ -461,8 +461,8 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         else:
             #  Print chat message to console.
             self.console_write(pinylib.COLOR['green'], self.active_user.nick + ': ' + decoded_msg)
-            # Only check chat msg for bad string if we are mod.
-            if self._is_client_mod:
+            # Only check chat msg for ban string if we are mod.
+            if self._is_client_mod and self.active_user.user_level > 4:
                 threading.Thread(target=self.check_msg, args=(decoded_msg,)).start()
 
         self.active_user.last_msg = decoded_msg
