@@ -12,7 +12,7 @@ from util import media_manager, privacy_settings
 
 
 log = logging.getLogger(__name__)
-__version__ = '6.0.0'
+__version__ = '6.0.1'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -1004,11 +1004,11 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             elif len(bad_string) < 3:
                 self.send_bot_msg('Bad string to short: ' + str(len(bad_string)))
             else:
-                if len(config.B_NICK_BANS) is 0:
+                if len(config.B_STRING_BANS) is 0:
                     pinylib.file_handler.file_writer(self.config_path(),
                                                      config.B_STRING_BANS_FILE_NAME, bad_string)
                 else:
-                    if bad_string in config.B_NICK_BANS:
+                    if bad_string in config.B_STRING_BANS:
                         self.send_bot_msg('*%s* is already in list.' % bad_string)
                     else:
                         pinylib.file_handler.file_writer(self.config_path(),
@@ -1725,24 +1725,26 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             human_time = '%d Day(s) %d:%02d:%02d' % (d, h, m, s)
         return human_time
 
-    def check_msg(self, msg):  # EDITED
+    def check_msg(self, msg):
         """
         Checks the chat message for bad string.
         :param msg: str the chat message.
         """
+        was_banned = False
         chat_words = msg.split(' ')
         for bad in config.B_STRING_BANS:
-            if bad.startswith('*') or bad.endswith('*'):
-                a = bad.replace('*', '')
-                if a in msg:
+            if bad.startswith('*'):
+                _ = bad.replace('*', '')
+                if _ in msg:
                     self.send_ban_msg(self.active_user.nick, self.active_user.id)
-                    self.send_forgive_msg(self.active_user.id)
-            else:
-                if bad in chat_words:
+                    was_banned = True
+            elif bad in chat_words:
                     self.send_ban_msg(self.active_user.nick, self.active_user.id)
-                    self.send_forgive_msg(self.active_user.id)
+                    was_banned = True
+        if was_banned and config.B_FORGIVE_AUTO_BANS:
+            self.send_forgive_msg(self.active_user.id)
 
-    def check_nick(self, old, user_info):  # NEW
+    def check_nick(self, old, user_info):
         """
         Check a users nick.
         :param old: str old nick.
@@ -1762,14 +1764,13 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                         return True
                 if len(config.B_NICK_BANS) > 0:
                     for bad_nick in config.B_NICK_BANS:
-                        if bad_nick.startswith('*') or bad_nick.endswith('*'):
+                        if bad_nick.startswith('*'):
                             a = bad_nick.replace('*', '')
                             if a in user_info.nick:
                                 self.send_ban_msg(user_info.nick, user_info.id)
                                 self.send_bot_msg('*Auto-Banned:* (*bad nick)')
                                 return True
-                        else:
-                            if user_info.nick in config.B_NICK_BANS:
+                        elif user_info.nick in config.B_NICK_BANS:
                                 self.send_ban_msg(user_info.nick, user_info.id)
                                 self.send_bot_msg('*Auto-Banned:* (bad nick)')
                                 return True
