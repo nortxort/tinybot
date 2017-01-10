@@ -10,9 +10,8 @@ import pinylib
 import apis
 from util import media_manager, privacy_settings
 
-
 log = logging.getLogger(__name__)
-__version__ = '6.0.1'
+__version__ = '6.0.2'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -964,17 +963,12 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         if self._is_client_mod:
             if len(bad_nick) is 0:
                 self.send_bot_msg('Missing username.')
+            elif bad_nick in config.B_NICK_BANS:
+                self.send_bot_msg('*%s* is already in list.' % bad_nick)
             else:
-                if len(config.B_NICK_BANS) is 0:
-                    pinylib.file_handler.file_writer(self.config_path(),
-                                                     config.B_NICK_BANS_FILE_NAME, bad_nick)
-                else:
-                    if bad_nick in config.B_NICK_BANS:
-                        self.send_bot_msg('*%s* is already in list.' % bad_nick)
-                    else:
-                        pinylib.file_handler.file_writer(self.config_path(),
-                                                         config.B_NICK_BANS_FILE_NAME, bad_nick)
-                        self.send_bot_msg('*%s* was added to file.' % bad_nick)
+                pinylib.file_handler.file_writer(self.config_path(),
+                                                 config.B_NICK_BANS_FILE_NAME, bad_nick)
+                self.send_bot_msg('*%s* was added to file.' % bad_nick)
                 self.load_list(nicks=True)
 
     def do_remove_bad_nick(self, bad_nick):
@@ -1000,20 +994,15 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         """
         if self._is_client_mod:
             if len(bad_string) is 0:
-                self.send_bot_msg('Bad string can\'t be blank.')
+                self.send_bot_msg('Ban string can\'t be blank.')
             elif len(bad_string) < 3:
-                self.send_bot_msg('Bad string to short: ' + str(len(bad_string)))
+                self.send_bot_msg('Ban string to short: ' + str(len(bad_string)))
+            elif bad_string in config.B_STRING_BANS:
+                self.send_bot_msg('*%s* is already in list.' % bad_string)
             else:
-                if len(config.B_STRING_BANS) is 0:
-                    pinylib.file_handler.file_writer(self.config_path(),
-                                                     config.B_STRING_BANS_FILE_NAME, bad_string)
-                else:
-                    if bad_string in config.B_STRING_BANS:
-                        self.send_bot_msg('*%s* is already in list.' % bad_string)
-                    else:
-                        pinylib.file_handler.file_writer(self.config_path(),
-                                                         config.B_STRING_BANS_FILE_NAME, bad_string)
-                        self.send_bot_msg('*%s* was added to file.' % bad_string)
+                pinylib.file_handler.file_writer(self.config_path(),
+                                                 config.B_STRING_BANS_FILE_NAME, bad_string)
+                self.send_bot_msg('*%s* was added to file.' % bad_string)
                 self.load_list(strings=True)
 
     def do_remove_bad_string(self, bad_string):
@@ -1042,17 +1031,12 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 self.send_bot_msg('Account can\'t be blank.')
             elif len(bad_account_name) < 3:
                 self.send_bot_msg('Account to short: ' + str(len(bad_account_name)))
+            elif bad_account_name in config.B_ACCOUNT_BANS:
+                self.send_bot_msg('%s is already in list.' % bad_account_name)
             else:
-                if len(config.B_ACCOUNT_BANS) is 0 or config.B_ACCOUNT_BANS is None:
-                    pinylib.file_handler.file_writer(self.config_path(),
-                                                     config.B_ACCOUNT_BANS_FILE_NAME, bad_account_name)
-                else:
-                    if bad_account_name in config.B_ACCOUNT_BANS:
-                        self.send_bot_msg('%s is already in list.' % bad_account_name)
-                    else:
-                        pinylib.file_handler.file_writer(self.config_path(),
-                                                         config.B_ACCOUNT_BANS_FILE_NAME, bad_account_name)
-                        self.send_bot_msg('*%s* was added to file.' % bad_account_name)
+                pinylib.file_handler.file_writer(self.config_path(),
+                                                 config.B_ACCOUNT_BANS_FILE_NAME, bad_account_name)
+                self.send_bot_msg('*%s* was added to file.' % bad_account_name)
                 self.load_list(accounts=True)
 
     def do_remove_bad_account(self, bad_account):
