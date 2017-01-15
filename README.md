@@ -2,7 +2,7 @@
 
 An extension module for the pinylib module.
 
-tinybot is an **example** as to how a tinychat bot *could* look like using the [pinylib](https://github.com/nortxort/pinylib) module as a base. It could be used as a template or it could be expanded with more features. It's all up to you how you would like to use it.
+tinybot is an **example** as to how a tinychat bot *could* look like using the [pinylib](https://github.com/nortxort/pinylib) module as a base. It could be used as a template or it could be expanded with more features. It's all up to you how you would like to use it. A windows executable is provided in the [release](https://github.com/nortxort/tinybot/releases) section along with the source code used to compile it.
 
 ## Setting up
 
