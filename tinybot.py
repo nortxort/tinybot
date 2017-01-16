@@ -18,7 +18,6 @@ class TinychatBot(pinylib.TinychatRTMPClient):
     privacy_settings = None
     media_manager = media_manager.MediaManager()
     media_timer_thread = None
-    search_thread = None  # not implemented
     search_list = []
     is_search_list_youtube_playlist = False  # NEW
 
