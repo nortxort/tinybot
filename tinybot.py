@@ -11,14 +11,16 @@ from util import media_manager, privacy_settings
 __all__ = ['pinylib']
 
 log = logging.getLogger(__name__)
-__version__ = '6.0.3'
+__version__ = '6.0.4'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
     privacy_settings = None
     media_manager = media_manager.MediaManager()
     media_timer_thread = None
+    search_thread = None  # not implemented
     search_list = []
+    is_search_list_youtube_playlist = False  # NEW
 
     def on_join(self, join_info_dict):
         log.info('user join info: %s' % join_info_dict)
@@ -309,7 +311,16 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                     threading.Thread(target=self.do_lastfm_random_tunes, args=(cmd_arg,)).start()
 
                 elif cmd == prefix + 'tag':
-                    threading.Thread(target=self.search_lastfm_by_tag, args=(cmd_arg,)).start()
+                    threading.Thread(target=self.do_search_lastfm_by_tag, args=(cmd_arg,)).start()
+
+                elif cmd == prefix + 'ypls':
+                    threading.Thread(target=self.do_youtube_playlist_search, args=(cmd_arg,)).start()  # NEW
+
+                elif cmd == prefix + 'pypl':
+                    threading.Thread(target=self.do_play_youtube_playlist, args=(cmd_arg,)).start()  # NEW
+
+                elif cmd == prefix + 'ssl':  # NEW
+                    self.do_show_search_list()
 
             if self.has_level(4):
                 if cmd == prefix + 'close':
@@ -342,7 +353,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 elif cmd == prefix + 'cpl':
                     self.do_clear_playlist()
 
-                elif cmd == prefix + 'spl':  # NEW
+                elif cmd == prefix + 'spl':
                     self.do_playlist_info()
 
                 elif cmd == prefix + 'nick':
@@ -693,7 +704,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                     else:
                         self.send_bot_msg('No more than 50 tunes.')
 
-    def search_lastfm_by_tag(self, search_str):
+    def do_search_lastfm_by_tag(self, search_str):
         """
         Searches last.fm for tunes matching the search term and creates a playlist from them.
         :param search_str: str the search term to search for.
@@ -713,6 +724,51 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                         self.media_event_timer(track.time)
                 else:
                     self.send_bot_msg('Failed to retrieve a result from last.fm.')
+
+    def do_youtube_playlist_search(self, search_term):  # NEW
+        """
+        Searches youtube for a play list matching the search term.
+        :param search_term: str the search to search for.
+        """
+        if self._is_client_mod:
+            if len(search_term) is 0:
+                self.send_bot_msg('Missing search term.')
+            else:
+                self.search_list = apis.youtube.playlist_search(search_term)
+                if len(self.search_list) is not 0:
+                    self.is_search_list_youtube_playlist = True
+                    for i in range(0, len(self.search_list)):
+                        self.send_owner_run_msg('(%s) *%s*' % (i, self.search_list[i]['playlist_title']))
+                else:
+                    self.send_bot_msg('Failed to find playlist matching search term: %s' % search_term)
+
+    def do_play_youtube_playlist(self, int_choice):  # NEW
+        """
+        Finds the videos from the youtube playlist search.
+        :param int_choice: int the index of the play list on the search_list.
+        """
+        if self._is_client_mod:
+            if self.is_search_list_youtube_playlist:
+                try:
+                    index_choice = int(int_choice)
+                except ValueError:
+                    self.send_bot_msg('Only numbers allowed.')
+                else:
+                    if 0 <= index_choice <= len(self.search_list) - 1:
+                        self.send_bot_msg('Please wait while creating playlist..')
+                        tracks = apis.youtube.playlist_videos(self.search_list[index_choice]['playlist_id'])
+                        if len(tracks) is not 0:
+                            self.media_manager.add_track_list(self.active_user.nick, tracks)
+                            self.send_bot_msg('*Added:* %s *tracks from youtube playlist.*' % len(tracks))
+                            if not self.media_manager.has_active_track():
+                                track = self.media_manager.get_next_track()
+                                self.send_media_broadcast_start(track.type, track.id)
+                        else:
+                            self.send_bot_msg('Failed to retrieve videos from youtube playlist.')
+                    else:
+                        self.send_bot_msg('Please make a choice between 0-%s' % str(len(self.search_list) - 1))
+            else:
+                self.send_bot_msg('The search list does not contain any youtube playlist id\'s.')
 
     def do_close_broadcast(self, user_name):
         """
@@ -886,6 +942,20 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                         i += 1
             else:
                 self.send_owner_run_msg('*No tracks in the playlist.*')
+
+    def do_show_search_list(self):  # NEW
+        """ Shows what is in the search list. """
+        if len(self.search_list) is 0:
+            self.send_bot_msg('No items in the search list.')
+        elif self.is_search_list_youtube_playlist:
+            self.send_bot_msg('*Youtube Playlist\'s.*')
+            for i in range(0, len(self.search_list)):
+                self.send_bot_msg('(%s) *%s*' % (i, self.search_list[i]['playlist_title']))
+        else:
+            self.send_bot_msg('*Youtube Tracks.*')
+            for i in range(0, len(self.search_list)):
+                self.send_bot_msg('(%s) *%s* %s' % (i, self.search_list[i]['video_title'],
+                                                    self.search_list[i]['video_time']))
 
     def do_nick(self, new_nick):
         """
@@ -1069,19 +1139,19 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                     if len(pinylib.CONFIG.B_NICK_BANS) is 0:
                         self.send_bot_msg('No items in this list.')
                     else:
-                        self.send_bot_msg('*%s* bad nicks in list.' % len(pinylib.CONFIG.B_NICK_BANS))
+                        self.send_bot_msg('%s *nicks bans in list.*' % len(pinylib.CONFIG.B_NICK_BANS))
 
                 elif list_type.lower() == 'bs':
                     if len(pinylib.CONFIG.B_STRING_BANS) is 0:
                         self.send_bot_msg('No items in this list.')
                     else:
-                        self.send_bot_msg('*%s* bad strings in list.' % pinylib.CONFIG.B_STRING_BANS)
+                        self.send_bot_msg('%s *string bans in list.*' % pinylib.CONFIG.B_STRING_BANS)
 
                 elif list_type.lower() == 'ba':
                     if len(pinylib.CONFIG.B_ACCOUNT_BANS) is 0:
                         self.send_bot_msg('No items in this list.')
                     else:
-                        self.send_bot_msg('*%s* bad accounts in list.' % pinylib.CONFIG.B_ACCOUNT_BANS)
+                        self.send_bot_msg('%s *account bans in list.*' % pinylib.CONFIG.B_ACCOUNT_BANS)
 
                 elif list_type.lower() == 'mods':
                     if self._is_client_owner:
@@ -1119,7 +1189,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                         self.send_owner_run_msg('*Last login:* ' + str(_user.last_login))
                     self.send_owner_run_msg('*Last message:* ' + str(_user.last_msg))
 
-    def do_youtube_search(self, search_str):
+    def do_youtube_search(self, search_str):  # EDITED
         """
         Searches youtube for a given search term, and returns a list of candidates.
         :param search_str: str the search term to search for.
@@ -1130,6 +1200,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             else:
                 self.search_list = apis.youtube.search_list(search_str, results=5)
                 if len(self.search_list) is not 0:
+                    self.is_search_list_youtube_playlist = False
                     for i in range(0, len(self.search_list)):
                         v_time = self.format_time(self.search_list[i]['video_time'])
                         v_title = self.search_list[i]['video_title']
@@ -1137,30 +1208,36 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 else:
                     self.send_bot_msg('Could not find: %s' % search_str)
 
-    def do_play_youtube_search(self, int_choice):
+    def do_play_youtube_search(self, int_choice):  # EDITED
         """
         Plays a youtube from the search list.
         :param int_choice: int the index in the search list to play.
         """
         if self._is_client_mod:
-            if len(self.search_list) > 0:
-                try:
-                    index_choice = int(int_choice)
-                except ValueError:
-                    self.send_bot_msg('Only numbers allowed.')
-                else:
-                    if 0 <= index_choice <= 4:
-                        if self.media_manager.has_active_track():
-                            track = self.media_manager.add_track(self.active_user.nick, self.search_list[index_choice])
-                            self.send_bot_msg('*Added* (%s) *%s* %s' %
-                                              (self.media_manager.last_track_index(), track.title,  track.time))
-                        else:
-                            track = self.media_manager.mb_start(self.active_user.nick,
-                                                                self.search_list[index_choice], mod_play=False)
-                            self.send_media_broadcast_start(track.type, track.id)
-                            self.media_event_timer(track.time)
+            if not self.is_search_list_youtube_playlist:
+                if len(self.search_list) > 0:
+                    try:
+                        index_choice = int(int_choice)
+                    except ValueError:
+                        self.send_bot_msg('Only numbers allowed.')
                     else:
-                        self.send_bot_msg('Please make a choice between 0-4')
+                        if 0 <= index_choice <= len(self.search_list) - 1:
+                            if self.media_manager.has_active_track():
+                                track = self.media_manager.add_track(self.active_user.nick,
+                                                                     self.search_list[index_choice])
+                                self.send_bot_msg('*Added* (%s) *%s* %s' %
+                                                  (self.media_manager.last_track_index(), track.title,  track.time))
+                            else:
+                                track = self.media_manager.mb_start(self.active_user.nick,
+                                                                    self.search_list[index_choice], mod_play=False)
+                                self.send_media_broadcast_start(track.type, track.id)
+                                self.media_event_timer(track.time)
+                        else:
+                            self.send_bot_msg('Please make a choice between 0-%s' % str(len(self.search_list) - 1))
+                else:
+                    self.send_bot_msg('No youtube track id\'s in the search list.')
+            else:
+                self.send_bot_msg('The search list only contains youtube playlist id\'s.')
 
     # == Public Command Methods. ==
     def do_full_screen(self, room_name):
@@ -1654,7 +1731,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         path = pinylib.CONFIG.CONFIG_PATH + self.roomname + '/'
         return path
 
-    def load_list(self, nicks=False, accounts=False, strings=False):  # NEW
+    def load_list(self, nicks=False, accounts=False, strings=False):
         """
         Loads different list to memory.
         :param nicks: bool, True load nick bans file.
@@ -1671,7 +1748,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             pinylib.CONFIG.B_STRING_BANS = pinylib.file_handler.file_reader(self.config_path(),
                                                                             pinylib.CONFIG.B_STRING_BANS_FILE_NAME)
 
-    def has_level(self, level):  # NEW
+    def has_level(self, level):
         """ Checks if the active user has correct user level. """
         if self.active_user.user_level is 6:
             return False
