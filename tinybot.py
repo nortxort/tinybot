@@ -312,10 +312,10 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 elif cmd == prefix + 'tag':
                     threading.Thread(target=self.do_search_lastfm_by_tag, args=(cmd_arg,)).start()
 
-                elif cmd == prefix + 'ypls':
+                elif cmd == prefix + 'pls':
                     threading.Thread(target=self.do_youtube_playlist_search, args=(cmd_arg,)).start()  # NEW
 
-                elif cmd == prefix + 'pypl':
+                elif cmd == prefix + 'plp':
                     threading.Thread(target=self.do_play_youtube_playlist, args=(cmd_arg,)).start()  # NEW
 
                 elif cmd == prefix + 'ssl':  # NEW
