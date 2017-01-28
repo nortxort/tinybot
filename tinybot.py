@@ -11,7 +11,7 @@ from util import media_manager, privacy_settings
 __all__ = ['pinylib']
 
 log = logging.getLogger(__name__)
-__version__ = '6.0.4'
+__version__ = '6.0.5'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -762,6 +762,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                             if not self.media_manager.has_active_track():
                                 track = self.media_manager.get_next_track()
                                 self.send_media_broadcast_start(track.type, track.id)
+                                self.media_event_timer(track.time)
                         else:
                             self.send_bot_msg('Failed to retrieve videos from youtube playlist.')
                     else:
@@ -1531,11 +1532,10 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             self.send_bot_msg('*8Ball* %s' % apis.locals.eight_ball())
 
     # Private Message Command Handler.
-    def private_message_handler(self, msg_sender, private_msg):
+    def private_message_handler(self, private_msg):
         """
         Custom private message commands.
-        :param msg_sender: str the user sending the private message.
-        :param private_msg: str the private message.
+        :param private_msg: str the private message (decoded).
         """
 
         prefix = pinylib.CONFIG.B_PREFIX
@@ -1748,7 +1748,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                                                                             pinylib.CONFIG.B_STRING_BANS_FILE_NAME)
 
     def has_level(self, level):
-        """ Checks if the active user has correct user level. """
+        """ Checks the active user for correct user level. """
         if self.active_user.user_level is 6:
             return False
         elif self.active_user.user_level <= level:

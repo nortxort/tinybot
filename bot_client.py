@@ -75,6 +75,12 @@ def main():
             cmd = msg_parts[0].lower().strip()
             if cmd == '/q':
                 bot.disconnect()
+            elif cmd == '/a':
+                if len(bot.users.signed_in) is 0:
+                    print ('No signed in users in the room.')
+                else:
+                    for user in bot.users.signed_in:
+                        print ('%s:%s' % (user.nick, user.account))
             elif cmd == '/u':
                 for user in bot.users.all:
                     print ('%s: %s' % (user, bot.users.all[user].user_level))

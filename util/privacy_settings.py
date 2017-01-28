@@ -11,7 +11,7 @@ class TinychatPrivacyPage:
     """
     def __init__(self, proxy):
         self._proxy = proxy
-        self._privacy_url = 'http://tinychat.com/settings/privacy'
+        self._privacy_url = 'https://tinychat.com/settings/privacy'
         self._csrf_token = ''
         self._room_password = None
         self._roompass_enabled = 0
@@ -27,7 +27,7 @@ class TinychatPrivacyPage:
         :param account_name: str the account name to check.
         :return: bool True if it is a valid account, False if invalid account
         """
-        url = 'http://tinychat.com/api/tcinfo?username=%s' % account_name
+        url = 'https://tinychat.com/api/tcinfo?username=%s' % account_name
         response = util.web.http_get(url=url, json=True)
         if response['json'] is not None:
             if 'error' not in response['json']:
@@ -36,7 +36,7 @@ class TinychatPrivacyPage:
 
     def clear_bans(self):
         """ Clear all room bans. """
-        url = 'http://tinychat.com/gifts/settings/privacy/clearbans'
+        url = 'https://tinychat.com/gifts/settings/privacy/clearbans'
         header = {
             'X-Requested-With': 'XMLHttpRequest',
             'Referer': self._privacy_url
@@ -101,12 +101,14 @@ class TinychatPrivacyPage:
                 self._roompass_enabled = 1
             else:
                 self._roompass_enabled = 0
-            # broadcast password
-            broadcast_pass = soup.find(attrs={'name': 'broadcastPassword'})
-            if broadcast_pass['value']:
-                self._broadcast_pass_enabled = 1
-            else:
-                self._broadcast_pass_enabled = 0
+
+            if not self._form_data['greenroom']:
+                # broadcast password
+                broadcast_pass = soup.find(attrs={'name': 'broadcastPassword'})
+                if broadcast_pass['value']:
+                    self._broadcast_pass_enabled = 1
+                else:
+                    self._broadcast_pass_enabled = 0
             # moderators
             # There has to be a more elegant way of doing this..
             pattern = 'var moderators = \''
@@ -170,7 +172,7 @@ class TinychatPrivacyPage:
         :return bool True if the account was added as a moderator, False if already a moderator
         or None on invalid account name.
         """
-        url = 'http://tinychat.com/gifts/settings/privacy/addmoderator'
+        url = 'https://tinychat.com/gifts/settings/privacy/addmoderator'
         if self._is_tc_account(account):
             if account not in self.room_moderators:
                 form_data = {
@@ -192,7 +194,7 @@ class TinychatPrivacyPage:
         :param account: str the moderator account
         :return: bool True if removed else False
         """
-        url = 'http://tinychat.com/gifts/settings/privacy/removemoderator'
+        url = 'https://tinychat.com/gifts/settings/privacy/removemoderator'
         if account in self.room_moderators:
             form_data = {
                 '_token': self._csrf_token,
