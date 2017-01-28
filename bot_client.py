@@ -130,7 +130,8 @@ def main():
 if __name__ == '__main__':
     if tinybot.pinylib.CONFIG.DEBUG_TO_FILE:
         formater = '%(asctime)s : %(levelname)s : %(filename)s : %(lineno)d : %(funcName)s() : %(name)s : %(message)s'
-        logging.basicConfig(filename=tinybot.pinylib.CONFIG.B_DEBUG_FILE_NAME, level=logging.DEBUG, format=formater)
+        logging.basicConfig(filename=tinybot.pinylib.CONFIG.B_DEBUG_FILE_NAME,
+                            level=tinybot.pinylib.CONFIG.DEBUG_LEVEL, format=formater)
         log.info('Starting tinybot version: %s using pinylib version: %s' %
                  (tinybot.__version__, tinybot.pinylib.__version__))
     else:
