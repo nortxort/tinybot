@@ -1423,7 +1423,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 self._b_password = conf['bpassword']
                 self.rtmp_parameter['greenroom'] = conf['greenroom']
             if self.rtmp_parameter['greenroom']:
-                self.send_cam_approve_msg(self.active_user.id, self.active_user.nick)
+                self.send_cam_approve_msg(self.active_user.nick, self.active_user.id)
 
     # == Tinychat API Command Methods. ==
     def do_spy(self, roomname):
