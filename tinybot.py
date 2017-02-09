@@ -11,7 +11,7 @@ from util import media_manager, privacy_settings
 __all__ = ['pinylib']
 
 log = logging.getLogger(__name__)
-__version__ = '6.0.5'
+__version__ = '6.0.6'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -19,7 +19,8 @@ class TinychatBot(pinylib.TinychatRTMPClient):
     media_manager = media_manager.MediaManager()
     media_timer_thread = None
     search_list = []
-    is_search_list_youtube_playlist = False  # NEW
+    is_search_list_youtube_playlist = False
+    is_broadcasting = False  # NEW
 
     def on_join(self, join_info_dict):
         log.info('user join info: %s' % join_info_dict)
@@ -73,12 +74,17 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         if self._is_client_owner and self.rtmp_parameter['roomtype'] != 'default':
             threading.Thread(target=self.get_privacy_settings).start()
 
-    def on_avon(self, uid, name):
-        if not pinylib.CONFIG.B_ALLOW_BROADCASTS and self._is_client_mod:
-            self.send_close_user_msg(name)
-            self.console_write(pinylib.COLOR['cyan'], 'Auto closed broadcast %s:%s' % (name, uid))
+    def on_avon(self, uid, name, greenroom=False):
+        if greenroom:
+            _user = self.users.search_by_id(name)
+            if _user is not None:
+                self.send_bot_msg('*%s*:%s is waiting in the greenroom.' % (_user.nick, _user.id))
         else:
-            self.console_write(pinylib.COLOR['cyan'], '%s:%s is broadcasting.' % (name, uid))
+            if not pinylib.CONFIG.B_ALLOW_BROADCASTS and self._is_client_mod:
+                self.send_close_user_msg(name)
+                self.console_write(pinylib.COLOR['cyan'], 'Auto closed broadcast %s:%s' % (name, uid))
+            else:
+                self.console_write(pinylib.COLOR['cyan'], '%s:%s is broadcasting.' % (name, uid))
 
     def on_nick(self, old, new, uid):
         if uid == self._client_id:
@@ -398,7 +404,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                     self.do_play_youtube_search(cmd_arg)
 
                 elif cmd == prefix + 'cam':
-                    threading.Thread(target=self.do_cam_approve).start()
+                    threading.Thread(target=self.do_cam_approve, args=(cmd_arg,)).start()
 
             # Public commands. (if enabled)
             if (pinylib.CONFIG.B_PUBLIC_CMD and self.has_level(5)) or self.active_user.user_level < 5:
@@ -592,12 +598,16 @@ class TinychatBot(pinylib.TinychatRTMPClient):
 
     def do_cam_up(self):
         """ Makes the bot cam up. """
-        self.send_bauth_msg()
-        self.connection.createstream()
+        if not self.is_broadcasting:
+            self.send_bauth_msg()
+            self.connection.createstream()
+            self.is_broadcasting = True
 
     def do_cam_down(self):
         """ Makes the bot cam down. """
-        self.send_close_stream()
+        if self.is_broadcasting:
+            self.connection.closestream()
+            self.is_broadcasting = False
 
     def do_nocam(self):
         """ Toggles if broadcasting is allowed or not. """
@@ -1415,7 +1425,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         else:
             self.send_bot_msg('Not enabled right now..')
 
-    def do_cam_approve(self):
+    def do_cam_approve(self, user_name):
         """ Send a cam approve message to a user. """
         if self._is_client_mod:
             if self._b_password is None:
@@ -1423,7 +1433,14 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 self._b_password = conf['bpassword']
                 self.rtmp_parameter['greenroom'] = conf['greenroom']
             if self.rtmp_parameter['greenroom']:
-                self.send_cam_approve_msg(self.active_user.nick, self.active_user.id)
+                if len(user_name) is 0:
+                    self.send_cam_approve_msg(self.active_user.nick, self.active_user.id)
+                elif len(user_name) > 0:
+                    _user = self.users.search(user_name)
+                    if _user is not None:
+                        self.send_cam_approve_msg(_user.nick, _user.id)
+                    else:
+                        self.send_bot_msg('No user named: %s' % user_name)
 
     # == Tinychat API Command Methods. ==
     def do_spy(self, roomname):
