@@ -11,7 +11,7 @@ from util import media_manager, privacy_settings
 __all__ = ['pinylib']
 
 log = logging.getLogger(__name__)
-__version__ = '6.0.6'
+__version__ = '6.0.7'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -319,12 +319,12 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                     threading.Thread(target=self.do_search_lastfm_by_tag, args=(cmd_arg,)).start()
 
                 elif cmd == prefix + 'pls':
-                    threading.Thread(target=self.do_youtube_playlist_search, args=(cmd_arg,)).start()  # NEW
+                    threading.Thread(target=self.do_youtube_playlist_search, args=(cmd_arg,)).start()
 
                 elif cmd == prefix + 'plp':
-                    threading.Thread(target=self.do_play_youtube_playlist, args=(cmd_arg,)).start()  # NEW
+                    threading.Thread(target=self.do_play_youtube_playlist, args=(cmd_arg,)).start()
 
-                elif cmd == prefix + 'ssl':  # NEW
+                elif cmd == prefix + 'ssl':
                     self.do_show_search_list()
 
             if self.has_level(4):
@@ -549,9 +549,13 @@ class TinychatBot(pinylib.TinychatRTMPClient):
     def do_kill(self):
         """ Kills the bot. """
         self.disconnect()
+        if self.is_green_connected:
+            self.disconnect(greenroom=True)
 
     def do_reboot(self):
         """ Reboots the bot. """
+        if self.is_green_connected:
+            self.disconnect(greenroom=True)
         self.reconnect()
 
     def do_media_info(self):
@@ -1454,14 +1458,13 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             else:
                 spy_info = pinylib.core.spy_info(roomname)
                 if spy_info is None:
-                    self.send_undercover_msg(self.active_user.nick, 'The room is empty.')
-                elif spy_info == 'PW':
-                    self.send_undercover_msg(self.active_user.nick, 'The room is password protected.')
+                    self.send_undercover_msg(self.active_user.nick, 'Failed to retrieve information.')
+                elif 'error' in spy_info:
+                    self.send_undercover_msg(self.active_user.nick, spy_info['error'])
                 else:
-                    self.send_undercover_msg(self.active_user.nick,
-                                             '*mods:* ' + spy_info['mod_count'] +
-                                             ' *Broadcasters:* ' + spy_info['broadcaster_count'] +
-                                             ' *Users:* ' + spy_info['total_count'])
+                    self.send_undercover_msg(self.active_user.nick, '*Mods:* %s, *Broadcasters:* %s, *Users:* %s' %
+                                             (spy_info['mod_count'], spy_info['broadcaster_count'],
+                                              spy_info['total_count']))
                     if self.has_level(3):
                         users = ', '.join(spy_info['users'])
                         self.send_undercover_msg(self.active_user.nick, '*' + users + '*')
@@ -1479,8 +1482,8 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 if tc_usr is None:
                     self.send_undercover_msg(self.active_user.nick, 'Could not find tinychat info for: ' + account)
                 else:
-                    self.send_undercover_msg(self.active_user.nick, 'ID: ' + tc_usr['tinychat_id'] +
-                                             ', Last login: ' + tc_usr['last_active'])
+                    self.send_undercover_msg(self.active_user.nick, '*ID:* %s, *Last Login:* %s' %
+                                             (tc_usr['tinychat_id'], tc_usr['last_active']))
 
     # == Other API Command Methods. ==
     def do_search_urban_dictionary(self, search_str):

@@ -75,6 +75,8 @@ def main():
             cmd = msg_parts[0].lower().strip()
             if cmd == '/q':
                 bot.disconnect()
+                if bot.is_green_connected:
+                    bot.disconnect(greenroom=True)
             elif cmd == '/a':
                 if len(bot.users.signed_in) is 0:
                     print ('No signed in users in the room.')
