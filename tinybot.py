@@ -11,7 +11,7 @@ from util import media_manager, privacy_settings
 __all__ = ['pinylib']
 
 log = logging.getLogger(__name__)
-__version__ = '6.0.7'
+__version__ = '6.0.8'
 
 
 class TinychatBot(pinylib.TinychatRTMPClient):
@@ -78,8 +78,12 @@ class TinychatBot(pinylib.TinychatRTMPClient):
         if greenroom:
             _user = self.users.search_by_id(name)
             if _user is not None:
-                self.send_bot_msg('*%s*:%s is waiting in the greenroom.' % (_user.nick, _user.id))
+                _user.is_waiting = True
+                self.send_bot_msg('%s:%s *is waiting in the greenroom.*' % (_user.nick, _user.id))
         else:
+            _user = self.users.search(name)
+            if _user is not None and _user.is_waiting:
+                _user.is_waiting = False
             if not pinylib.CONFIG.B_ALLOW_BROADCASTS and self._is_client_mod:
                 self.send_close_user_msg(name)
                 self.console_write(pinylib.COLOR['cyan'], 'Auto closed broadcast %s:%s' % (name, uid))
@@ -97,7 +101,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             if pinylib.CONFIG.B_FORGIVE_AUTO_BANS:
                 self.send_forgive_msg(uid)
         elif uid != self._client_id:
-            if pinylib.CONFIG.B_GREET:
+            if self._is_client_mod and pinylib.CONFIG.B_GREET:
                 if old_info.account:
                     self.send_bot_msg('*Welcome* %s:%s:%s' % (new, uid, old_info.account))
                 else:
@@ -368,10 +372,10 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                     self.do_topic(cmd_arg)
 
                 elif cmd == prefix + 'kick':
-                    self.do_kick(cmd_arg)
+                    threading.Thread(target=self.do_kick, args=(cmd_arg,)).start()
 
                 elif cmd == prefix + 'ban':
-                    self.do_ban(cmd_arg)
+                    threading.Thread(target=self.do_ban, args=(cmd_arg,)).start()
 
                 elif cmd == prefix + 'bn':
                     self.do_bad_nick(cmd_arg)
@@ -1010,16 +1014,27 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             elif user_name == self.nickname:
                 self.send_bot_msg('Action not allowed.')
             else:
-                _user = self.users.search(user_name)
-                if _user is None:
-                    self.send_bot_msg('No user named: *%s*' % user_name)
-                elif _user.user_level < self.active_user.user_level:
-                    self.send_bot_msg('Not allowed.')
+                if user_name.startswith('*'):
+                    user_name = user_name.replace('*', '')
+                    _users = self.users.search_containing(user_name)
+                    if len(_users) > 0:
+                        for i, user in enumerate(_users):
+                            if user.nick != self.nickname and user.user_level > self.active_user.user_level:
+                                if i <= pinylib.CONFIG.B_MAX_MATCH_BANS - 1:
+                                    self.send_ban_msg(user.nick, user.id)
+                                    a = pinylib.string_util.random.uniform(0.0, 1.0)
+                                    pinylib.time.sleep(a)
+                                    self.send_forgive_msg(user.id)
+                                    pinylib.time.sleep(0.5)
                 else:
-                    self.send_ban_msg(user_name, _user.id)
-                    self.send_forgive_msg(_user.id)
-        else:
-            self.send_bot_msg('Command not enabled.')
+                    _user = self.users.search(user_name)
+                    if _user is None:
+                        self.send_bot_msg('No user named: *%s*' % user_name)
+                    elif _user.user_level < self.active_user.user_level:
+                        self.send_bot_msg('Not allowed.')
+                    else:
+                        self.send_ban_msg(user_name, _user.id)
+                        self.send_forgive_msg(_user.id)
 
     def do_ban(self, user_name):
         """
@@ -1032,15 +1047,26 @@ class TinychatBot(pinylib.TinychatRTMPClient):
             elif user_name == self.nickname:
                 self.send_bot_msg('Action not allowed.')
             else:
-                _user = self.users.search(user_name)
-                if _user is None:
-                    self.send_bot_msg('No user named: *%s*' % user_name)
-                elif _user.user_level < self.active_user.user_level:
-                    self.send_bot_msg('Not allowed.')
+                if user_name.startswith('*'):
+                    user_name = user_name.replace('*', '')
+                    _users = self.users.search_containing(user_name)
+                    if len(_users) > 0:
+                        for i, user in enumerate(_users):
+                            if user.nick != self.nickname and user.user_level > self.active_user.user_level:
+                                if i <= pinylib.CONFIG.B_MAX_MATCH_BANS - 1:
+                                    self.send_ban_msg(user.nick, user.id)
+                                    a = pinylib.string_util.random.uniform(0.0, 1.5)
+                                    pinylib.time.sleep(a)
                 else:
-                    self.send_ban_msg(user_name, _user.id)
+                    _user = self.users.search(user_name)
+                    if _user is None:
+                        self.send_bot_msg('No user named: *%s*' % user_name)
+                    elif _user.user_level < self.active_user.user_level:
+                        self.send_bot_msg('Not allowed.')
+                    else:
+                        self.send_ban_msg(user_name, _user.id)
 
-    def do_bad_nick(self, bad_nick):  # EDITED
+    def do_bad_nick(self, bad_nick):
         """
         Adds a username to the nicks bans file.
         :param bad_nick: str the bad nick to write to file.
@@ -1072,7 +1098,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                         self.send_bot_msg('*%s* was removed.' % bad_nick)
                         self.load_list(nicks=True)
 
-    def do_bad_string(self, bad_string):  # EDITED
+    def do_bad_string(self, bad_string):
         """
         Adds a string to the strings bans file.
         :param bad_string: str the bad string to add to file.
@@ -1106,7 +1132,7 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                         self.send_bot_msg('*%s* was removed.' % bad_string)
                         self.load_list(strings=True)
 
-    def do_bad_account(self, bad_account_name):  # EDITED
+    def do_bad_account(self, bad_account_name):
         """
         Adds an account name to the accounts bans file.
         :param bad_account_name: str the bad account name to add to file.
@@ -1437,11 +1463,14 @@ class TinychatBot(pinylib.TinychatRTMPClient):
                 self._b_password = conf['bpassword']
                 self.rtmp_parameter['greenroom'] = conf['greenroom']
             if self.rtmp_parameter['greenroom']:
-                if len(user_name) is 0:
+                if len(user_name) is 0 and self.active_user.is_waiting:
+                    self.active_user.is_waiting = False
                     self.send_cam_approve_msg(self.active_user.nick, self.active_user.id)
+
                 elif len(user_name) > 0:
                     _user = self.users.search(user_name)
-                    if _user is not None:
+                    if _user is not None and _user.is_waiting:
+                        _user.is_waiting = False
                         self.send_cam_approve_msg(_user.nick, _user.id)
                     else:
                         self.send_bot_msg('No user named: %s' % user_name)

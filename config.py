@@ -1,5 +1,4 @@
 # This file holds pinylib's configuration.
-# Use a prefix, if you plan on adding your own.
 # Settings info https://github.com/nortxort/pinylib/wiki/Settings
 
 # Tinychat account.
@@ -7,7 +6,7 @@ ACCOUNT = ''
 # Password for account
 PASSWORD = ''
 # The swf version that tinychat is currently using.
-SWF_VERSION = '0675'
+SWF_VERSION = '0677'
 # Log chat messages and events.
 CHAT_LOGGING = True
 # Show additional info/errors in console.
@@ -42,6 +41,8 @@ B_PREFIX = '!'
 B_KEY = 'gsd67stf'
 # Bot super key.
 B_SUPER_KEY = '786sdgs87s7yf'
+# The maximum amount of match bans.
+B_MAX_MATCH_BANS = 1
 # Public commands enabled.
 B_PUBLIC_CMD = True
 # Greet user when joining.
