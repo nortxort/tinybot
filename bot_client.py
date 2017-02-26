@@ -40,7 +40,7 @@ def main():
         bot.account = ''
         bot.password = None
 
-    status = bot.get_rtmp_parameters()
+    status = bot.set_rtmp_parameters()
     while True:
         if status == 1:
             bot.console_write(tinybot.pinylib.COLOR['bright_red'], 'Password protected. Enter room password')
@@ -49,7 +49,7 @@ def main():
                 main()
                 break
             else:
-                status = bot.get_rtmp_parameters()
+                status = bot.set_rtmp_parameters()
         elif status == 2:
             bot.console_write(tinybot.pinylib.COLOR['bright_red'], 'The room has been closed.')
             main()
